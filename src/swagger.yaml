@@ -1,0 +1,170 @@
+openapi: 3.0.0
+info:
+  title: User API
+  description: Some description
+  version: 0.0.1
+
+  contact:
+    name: carlosallexandre
+    email: oi@carlosallexandre.dev
+
+paths:
+  /users:
+    post:
+      summary: Create a new user
+      tags:
+        - Users
+      requestBody:
+        description: Parameters to create a new user
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: >
+            Bad request.
+            User email aready in use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      summary: List all users only for admin users.
+      tags:
+        - Users
+      parameters:
+        - in: header
+          name: user_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/UniqueID"
+
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserArray"
+        "400":
+          description: >
+            Bad request.
+            Or user not found.
+            Or user doesn't has permissions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{user_id}/admin:
+    patch:
+      summary: Turn user of `user_id` into admin.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/UniqueID"
+
+      responses:
+        "200":
+          description: User updated
+          content:
+            appplication/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: >
+            Bad request.
+            User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{user_id}:
+    get:
+      summary: Show user profile of `user_id`.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/UniqueID"
+
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/User"
+        "404":
+          description: >
+            Bad request.
+            User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+tags:
+  -name: Users
+    description: Management your users
+
+components:
+  schemas:
+    UniqueID:
+      type: string
+      format: uuid
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        admin:
+          type: boolean
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date
+        updated_at:
+          type: string
+          format: date
+
+    UserArray:
+      type: array
+      items:
+        $ref: "#components/schemas/User"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
